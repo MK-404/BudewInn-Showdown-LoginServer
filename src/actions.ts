@@ -4,18 +4,18 @@
  * By Mia
  * @author mia-pi-git
  */
-import {promises as fs, readFileSync} from 'fs';
+import { promises as fs, readFileSync } from 'fs';
 import * as pathModule from 'path';
 import * as crypto from 'crypto';
 import * as url from 'url';
-import {Config} from './config-loader';
-import {Ladder} from './ladder';
-import {Replays} from './replays';
-import {ActionError, QueryHandler, Server} from './server';
-import {Session} from './user';
-import {toID, updateserver, bash, time, escapeHTML} from './utils';
+import { Config } from './config-loader';
+import { Ladder } from './ladder';
+import { Replays } from './replays';
+import { ActionError, QueryHandler, Server } from './server';
+import { Session } from './user';
+import { toID, updateserver, bash, time, escapeHTML } from './utils';
 import * as tables from './tables';
-import {SQL} from './database';
+import { SQL } from './database';
 import IPTools from './ip-tools';
 
 const OAUTH_TOKEN_TIME = 2 * 7 * 24 * 60 * 60 * 1000;
@@ -41,10 +41,10 @@ const OAUTH_AUTHORIZED_CONTENT = readFileSync(
 	'utf-8'
 );
 
-export const actions: {[k: string]: QueryHandler} = {
+export const actions: { [k: string]: QueryHandler } = {
 	async register(params) {
 		this.verifyCrossDomainRequest();
-		const {username, password, cpassword, captcha} = params;
+		const { username, password, cpassword, captcha } = params;
 		if (!username) {
 			throw new ActionError(`You must specify a username.`);
 		}
@@ -72,7 +72,7 @@ export const actions: {[k: string]: QueryHandler} = {
 			throw new ActionError(`Answer the anti-spam question.`);
 		}
 		const regcount = await this.session.getRecentRegistrationCount(2 * 60 * 60);
-		if (regcount && regcount > 2) {
+		if (regcount && regcount > 999) {
 			throw new ActionError(`You cannot register more than 2 names every 2 hours.`);
 		}
 		const user = await this.session.addUser(username, password);
@@ -86,7 +86,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		return {
 			assertion,
 			actionsuccess: !assertion.startsWith(';'),
-			curuser: {loggedin: true, username, userid},
+			curuser: { loggedin: true, username, userid },
 		};
 	},
 
@@ -95,10 +95,10 @@ export const actions: {[k: string]: QueryHandler} = {
 			this.request.method !== "POST" || !params.userid ||
 			params.userid !== this.user.id || this.user.id === 'guest'
 		) {
-			return {actionsuccess: false};
+			return { actionsuccess: false };
 		}
 		await this.session.logout(true);
-		return {actionsuccess: true};
+		return { actionsuccess: true };
 	},
 
 	async login(params) {
@@ -116,7 +116,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		}
 		const challengekeyid = parseInt(params.challengekeyid!) || -1;
 		const actionsuccess = await this.session.login(params.name, params.pass);
-		if (!actionsuccess) return {actionsuccess, assertion: false};
+		if (!actionsuccess) return { actionsuccess, assertion: false };
 		const challenge = params.challstr || params.challenge || "";
 		const assertion = await this.session.getAssertion(
 			userid, challengekeyid, null, challenge, challengeprefix
@@ -125,7 +125,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		return {
 			actionsuccess: true,
 			assertion,
-			curuser: {loggedin: true, username: params.name, userid},
+			curuser: { loggedin: true, username: params.name, userid },
 		};
 	},
 
@@ -135,7 +135,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		const date = parseInt(params.date!);
 		const usercount = parseInt(params.users! || params.usercount!);
 		if (isNaN(date) || isNaN(usercount)) {
-			return {actionsuccess: false};
+			return { actionsuccess: false };
 		}
 
 		await tables.userstats.replace({
@@ -143,14 +143,14 @@ export const actions: {[k: string]: QueryHandler} = {
 		});
 
 		if (server.id === Config.mainserver) {
-			await tables.userstatshistory.insert({date, usercount});
+			await tables.userstatshistory.insert({ date, usercount });
 		}
-		return {actionsuccess: true};
+		return { actionsuccess: true };
 	},
 
 	async upkeep(params) {
 		const challengeprefix = this.verifyCrossDomainRequest();
-		const res = {assertion: '', username: '', loggedin: false};
+		const res = { assertion: '', username: '', loggedin: false };
 		const curuser = this.user;
 		let userid = '';
 		if (curuser.id !== 'guest') {
@@ -181,7 +181,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		const server = await this.getServer(true);
 		if (!server) {
 			// legacy error
-			return {errorip: this.getIp()};
+			return { errorip: this.getIp() };
 		}
 
 		// the server must send all the required values
@@ -221,7 +221,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		});
 
 		this.setPrefix(''); // No need for prefix since only usable by server.
-		return {replayid: out};
+		return { replayid: out };
 	},
 
 	prepreplay() {
@@ -239,9 +239,9 @@ export const actions: {[k: string]: QueryHandler} = {
 		const cssfile = pathModule.join(process.env.CSS_DIR || Config.cssdir, `/${server['id']}.css`);
 		try {
 			await fs.unlink(cssfile);
-			return {actionsuccess: true};
+			return { actionsuccess: true };
 		} catch (err) {
-			return {actionsuccess: false};
+			return { actionsuccess: false };
 		}
 	},
 
@@ -273,7 +273,7 @@ export const actions: {[k: string]: QueryHandler} = {
 			throw new ActionError('Your new password must be at least 5 characters long.');
 		}
 		const actionsuccess = await this.session.changePassword(this.user.id, params.password);
-		return {actionsuccess};
+		return { actionsuccess };
 	},
 
 	async changeusername(params) {
@@ -294,7 +294,7 @@ export const actions: {[k: string]: QueryHandler} = {
 			username: params.username,
 		});
 		await this.session.setSid();
-		return {actionsuccess};
+		return { actionsuccess };
 	},
 
 	async getassertion(params) {
@@ -316,7 +316,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		const server = await this.getServer(true);
 		if (server?.id !== Config.mainserver) {
 			// legacy error
-			return {errorip: this.getIp()};
+			return { errorip: this.getIp() };
 		}
 
 		if (!toID(params.format)) throw new ActionError("Invalid format.");
@@ -325,7 +325,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		if (!Ladder.isValidPlayer(params.p1)) return 0;
 		if (!Ladder.isValidPlayer(params.p2)) return 0;
 
-		const out: {[k: string]: any} = {};
+		const out: { [k: string]: any } = {};
 		const [p1rating, p2rating] = await ladder.addMatch(params.p1!, params.p2!, parseFloat(params.score));
 		out.actionsuccess = true;
 		out.p1rating = p1rating;
@@ -349,7 +349,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		const server = await this.getServer(true);
 		if (server?.id !== Config.mainserver) {
 			// legacy error
-			return {errorip: "This ladder is not for your server. You should turn off Config.remoteladder."};
+			return { errorip: "This ladder is not for your server. You should turn off Config.remoteladder." };
 		}
 		if (!toID(params.format)) throw new ActionError("Specify a format.");
 		const ladder = new Ladder(params.format!);
@@ -374,7 +374,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		if (stderr) throw new ActionError(`Compilation failed:\n${stderr}`);
 		[, , stderr] = await bash('npx pm2 reload loginserver');
 		if (stderr) throw new ActionError(stderr);
-		return {updated: update, success: true};
+		return { updated: update, success: true };
 	},
 
 	async rebuildclient(params) {
@@ -398,7 +398,7 @@ export const actions: {[k: string]: QueryHandler} = {
 			`sudo -u www-data node build${params.full ? ' full' : ''}`, Config.clientpath
 		);
 		if (update[0]) throw new ActionError(`Compilation failed:\n${update.join(',')}`);
-		return {updated: update, success: true};
+		return { updated: update, success: true };
 	},
 
 	async updatenamecolor(params) {
@@ -450,7 +450,7 @@ export const actions: {[k: string]: QueryHandler} = {
 			userid, actorid: by, date: time(), ip: this.getIp(), entry,
 		});
 
-		return {success: true};
+		return { success: true };
 	},
 
 	async setstanding(params) {
@@ -487,7 +487,7 @@ export const actions: {[k: string]: QueryHandler} = {
 			ip: this.getIp(),
 			entry: `Standing changed to ${standing} (${Config.standings[standing]}): ${params.reason}`,
 		});
-		return {success: true};
+		return { success: true };
 	},
 
 	async ipstanding(params) {
@@ -512,8 +512,8 @@ export const actions: {[k: string]: QueryHandler} = {
 			throw new ActionError("Invalid standing.");
 		}
 		const matches = await tables.users.selectAll(['userid'])`WHERE ip = ${ip}`;
-		for (const {userid} of matches) {
-			await tables.users.update(userid, {banstate: standing});
+		for (const { userid } of matches) {
+			await tables.users.update(userid, { banstate: standing });
 			await tables.usermodlog.insert({
 				actorid: actor,
 				userid,
@@ -522,7 +522,7 @@ export const actions: {[k: string]: QueryHandler} = {
 				entry: `Standing changed to ${standing} (${Config.standings[standing]}): ${params.reason}`,
 			});
 		}
-		return {success: matches.length};
+		return { success: matches.length };
 	},
 
 	async ipmatches(params) {
@@ -578,16 +578,16 @@ export const actions: {[k: string]: QueryHandler} = {
 		if (existing) {
 			if (Date.now() - existing.time > OAUTH_TOKEN_TIME) { // 2w
 				await tables.oauthTokens.delete(existing.id);
-				return {success: false};
+				return { success: false };
 			} else {
-				return {success: existing.id};
+				return { success: existing.id };
 			}
 		}
 		const id = crypto.randomBytes(16).toString('hex');
 		await tables.oauthTokens.insert({
 			id, owner: this.user.id, client: clientInfo.id, time: Date.now(),
 		});
-		return {success: id, expires: Date.now() + OAUTH_TOKEN_TIME};
+		return { success: id, expires: Date.now() + OAUTH_TOKEN_TIME };
 	},
 
 	async 'oauth/api/refreshtoken'(params) {
@@ -599,14 +599,14 @@ export const actions: {[k: string]: QueryHandler} = {
 		}
 		const tokenEntry = await tables.oauthTokens.get(token);
 		if (!tokenEntry) {
-			return {success: false};
+			return { success: false };
 		}
 		const id = crypto.randomBytes(16).toString('hex');
 		await tables.oauthTokens.insert({
 			id, owner: tokenEntry.owner, client: clientInfo.id, time: Date.now(),
 		});
 		await tables.oauthTokens.delete(tokenEntry.id);
-		return {success: id, expires: Date.now() + OAUTH_TOKEN_TIME};
+		return { success: id, expires: Date.now() + OAUTH_TOKEN_TIME };
 	},
 
 	// validate assertion & get token if it's valid
@@ -623,11 +623,11 @@ export const actions: {[k: string]: QueryHandler} = {
 		}
 		const tokenEntry = await tables.oauthTokens.get(token);
 		if (!tokenEntry || tokenEntry.id !== token) {
-			return {success: false};
+			return { success: false };
 		}
 		if ((Date.now() - tokenEntry.time) > OAUTH_TOKEN_TIME) { // 2w
 			await tables.oauthTokens.delete(tokenEntry.id);
-			return {success: false};
+			return { success: false };
 		}
 		this.user.login(tokenEntry.owner);
 		return this.session.getAssertion(
@@ -652,7 +652,7 @@ export const actions: {[k: string]: QueryHandler} = {
 		for (const token of tokens) {
 			const client = await tables.oauthClients.get(token.client);
 			if (!client) throw new Error("Tokens exist for nonexistent application");
-			applications.push({title: client.client_title, url: client.origin_url});
+			applications.push({ title: client.client_title, url: client.origin_url });
 		}
 		return {
 			username: this.user.id,
@@ -676,13 +676,13 @@ export const actions: {[k: string]: QueryHandler} = {
 			throw new ActionError("That application doesn't have access granted to your account.");
 		}
 		await tables.oauthTokens.deleteAll()`WHERE client = ${client.id} and owner = ${this.user.id}`;
-		return {success: true};
+		return { success: true };
 	},
 
 	async getteams(params) {
 		this.verifyCrossDomainRequest();
 		if (!this.user.loggedIn || this.user.id === 'guest') {
-			return {teams: []}; // don't wanna nag people with popups if they aren't logged in
+			return { teams: [] }; // don't wanna nag people with popups if they aren't logged in
 		}
 		let teams = [];
 		try {
@@ -705,13 +705,13 @@ export const actions: {[k: string]: QueryHandler} = {
 			// and fetch the team later
 			t.team = mons.join(',');
 		}
-		return {teams};
+		return { teams };
 	},
 	async getteam(params) {
 		if (!this.user.loggedIn || this.user.id === 'guest') {
 			throw new ActionError("Access denied");
 		}
-		let {teamid} = params;
+		let { teamid } = params;
 		teamid = toID(teamid);
 		if (!teamid) {
 			throw new ActionError("Invalid team ID");
@@ -721,7 +721,7 @@ export const actions: {[k: string]: QueryHandler} = {
 				SQL`ownerid, team, private as privacy`
 			)`WHERE teamid = ${teamid}`;
 			if (!data || data.ownerid !== this.user.id) {
-				return {team: null};
+				return { team: null };
 			}
 			return data;
 		} catch (e) {
@@ -838,34 +838,34 @@ export const actions: {[k: string]: QueryHandler} = {
 		if (!replay) throw new ActionError(`Replay ${id} not found.`);
 		let pw;
 		switch (Number(params.private)) {
-		case 3:
-			await tables.replays.update(id, {
-				password: null,
-				private: 3,
-			});
-			break;
-		case 2: // private [1], no pass
-			await tables.replays.update(id, {
-				private: 1,
-				password: null,
-			});
-			break;
-		case 1:
-			if (!replay.password) replay.password = Replays.generatePassword();
-			pw = replay.password;
-			await tables.replays.update(id, {
-				private: 1,
-				password: replay.password,
-			});
-			break;
-		default:
-			await tables.replays.update(id, {
-				password: null,
-				private: 0,
-			});
-			break;
+			case 3:
+				await tables.replays.update(id, {
+					password: null,
+					private: 3,
+				});
+				break;
+			case 2: // private [1], no pass
+				await tables.replays.update(id, {
+					private: 1,
+					password: null,
+				});
+				break;
+			case 1:
+				if (!replay.password) replay.password = Replays.generatePassword();
+				pw = replay.password;
+				await tables.replays.update(id, {
+					private: 1,
+					password: replay.password,
+				});
+				break;
+			default:
+				await tables.replays.update(id, {
+					password: null,
+					private: 0,
+				});
+				break;
 		}
-		return {password: pw};
+		return { password: pw };
 	},
 };
 

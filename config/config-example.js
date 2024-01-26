@@ -48,7 +48,7 @@ exports.routes = {
 /** @type {string} */
 exports.mainserver = 'showdown';
 /** @type {string} */
-exports.serverlist = '/var/www/html/play.pokemonshowdown.com/config/servers.inc.php';
+exports.serverlist = 'C:/Showdown/BudewInn-Showdown-Client/config/servers.inc.php';
 /** @type {string | null} */
 exports.colorpath = null;
 
@@ -76,9 +76,9 @@ exports.compromisedkeys = [];
 exports.trustedproxies = [];
 
 /**
-    * [Places to allow cors requests from, prefix to use][]
-    * @type {[RegExp, string][]}
-    */
+	* [Places to allow cors requests from, prefix to use][]
+	* @type {[RegExp, string][]}
+	*/
 exports.cors = [
 	[/^http:\/\/smogon\.com$/, "smogon.com_"],
 	[/^http:\/\/www\.smogon\.com$/, "www.smogon.com_"],
@@ -89,9 +89,9 @@ exports.cors = [
 ];
 
 /**
-    * array of user IDs who will be given sysop powers on all servers they log into via this loginserver
-    * @type {string[]}
-    */
+	* array of user IDs who will be given sysop powers on all servers they log into via this loginserver
+	* @type {string[]}
+	*/
 exports.sysops = [];
 
 // Private key to use for validating assertions.

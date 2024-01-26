@@ -42,7 +42,7 @@ exports.passwordSalt = 10;
 // routes - todo stricter key types?
 /** @type {Record<string, string>} */
 exports.routes = {
-	root: "pokemonshowdown.com",
+	root: "budewinn.it",
 };
 
 /** @type {string} */

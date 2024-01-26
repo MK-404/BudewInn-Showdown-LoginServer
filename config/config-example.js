@@ -57,7 +57,7 @@ exports.devmode = null;
 
 // absolute path to your PS instance. can use the checked-out client that the client clones in.
 /** @type {string} */
-exports.pspath = '/var/www/html/play.pokemonshowdown.com/data/pokemon-showdown';
+exports.pspath = 'C:/Showdown/BudewInn-Showdown-Server';
 
 /**
  * Custom SID maker.
@@ -86,6 +86,7 @@ exports.cors = [
 	[/^http:\/\/logs\.psim\.us:8080$/, "logs.psim.us_"],
 	[/^http:\/\/[a-z0-9]+\.psim\.us$/, ""],
 	[/^http:\/\/play\.pokemonshowdown\.com$/, ""],
+	[/^https:\/\/www\.budewinn\.it$/, ""]
 ];
 
 /**

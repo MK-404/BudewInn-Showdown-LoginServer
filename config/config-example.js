@@ -130,8 +130,11 @@ exports.crashguardemail = null;
  * SSL settings.
  * @type {{key: string, cert: string, port: number} | null}
  */
-exports.ssl = null;
-
+exports.ssl = {
+	key: "string",
+	cert: "string",
+	port: 1234
+};
 /**
  * Port to listen on.
  * @type {number}

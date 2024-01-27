@@ -326,6 +326,7 @@ export class Server {
 		this.server.listen(port);
 		this.httpsServer = null;
 		if (Config.ssl) {
+			console.log(`Creating HTTPS server on port ${Config.ssl.port || 8043}`)
 			this.httpsServer = https.createServer({
 				key: fs.readFileSync(Config.ssl.key),
 				cert: fs.readFileSync(Config.ssl.cert),
